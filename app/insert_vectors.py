@@ -1,5 +1,5 @@
 from datetime import datetime
-
+import psycopg
 import pandas as pd
 from database.vector_store import VectorStore
 from datasets import load_dataset
@@ -12,6 +12,7 @@ vec = VectorStore()
 dataset = load_dataset("cnn_dailymail", "3.0.0")
 subset = dataset["train"].shuffle(seed=42).select(range(1000))
 df = pd.DataFrame(subset)
+
 
 
 # Prepare data for insertion
