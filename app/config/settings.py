@@ -7,7 +7,12 @@ from typing import Optional
 from dotenv import load_dotenv
 from pydantic import BaseModel, Field
 
-load_dotenv(dotenv_path="./.env")
+# Get the directory of the current script (settings.py)
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DOTENV_PATH = os.path.join(BASE_DIR, "..", ".env")  # Adjust to point to the project root
+
+# Load the .env file
+load_dotenv(dotenv_path=DOTENV_PATH)
 
 
 def setup_logging():
