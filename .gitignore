@@ -87,7 +87,7 @@ target/
 .mypy_cache/
 
 # Exclude virtual environment
-.venv/
+venv/
 
 # Exclude trained models
 /models/

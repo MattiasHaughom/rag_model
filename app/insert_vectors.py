@@ -1,7 +1,8 @@
 from datetime import datetime
 import os
 import pandas as pd
-from langchain.document_loaders import PyPDFLoader
+import psycopg
+from langchain_community.document_loaders import PyPDFLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from database.vector_store import VectorStore
 from timescale_vector.client import uuid_from_time
@@ -9,6 +10,25 @@ from timescale_vector.client import uuid_from_time
 # Initialize VectorStore
 vec = VectorStore()
 
+def is_document_exists(doc_id, chunk_id):
+    """Check if the document or chunk already exists in the database using metadata filtering."""
+    
+    # SQL query to check for the document based on doc_id and chunk_id
+    check_sql = f"""
+    SELECT 1
+    FROM {vec.vector_settings.table_name}
+    WHERE metadata->>'doc_id' = %s AND metadata->>'chunk_id' = %s::text
+    LIMIT 1
+    """
+    
+    # Perform the check directly in the database
+    with psycopg.connect(vec.settings.database.service_url) as conn:
+        with conn.cursor() as cur:
+            cur.execute(check_sql, (doc_id, chunk_id))
+            result = cur.fetchone()
+    
+    # If result is not None, the document or chunk already exists
+    return result is not None
 
 
 # Function to load and process PDFs
@@ -46,18 +66,26 @@ def load_and_process_pdfs(pdf_folder):
 # Replace this path with the folder where your PDFs are stored
 pdf_folder_path = "/Users/mattiashaughom/Documents/Repositories/AI repositories/rag_model/data"
 df = load_and_process_pdfs(pdf_folder_path)
-df = df.head(100)
-# Prepare data for insertion
+
+
 def prepare_record(row):
     """Prepare a record for insertion into the vector store."""
+    doc_id = row["doc_id"]
+    chunk_id = row["chunk_id"]
+
+    # Check if the document or chunk already exists
+    if is_document_exists(doc_id, chunk_id):
+        print(f"Skipping existing document: {doc_id}, chunk: {chunk_id}")
+        return None  # Skip this record if it already exists
+
     content = row["content"]
     embedding = vec.get_embedding(content)
     return pd.Series(
         {
             "id": str(uuid_from_time(datetime.now())),
             "metadata": {
-                "doc_id": row["doc_id"],
-                "chunk_id": row["chunk_id"],
+                "doc_id": doc_id,
+                "chunk_id": chunk_id,
                 "created_at": datetime.now().isoformat(),
             },
             "contents": content,
@@ -66,7 +94,7 @@ def prepare_record(row):
     )
 
 # Apply the preparation to each row
-records_df = df.apply(prepare_record, axis=1)
+records_df = df.apply(prepare_record, axis=1).dropna()
 
 # Create tables and insert data into the vector store
 vec.create_tables()
