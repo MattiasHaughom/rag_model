@@ -93,11 +93,12 @@ def prepare_record(row):
         }
     )
 
+
 # Apply the preparation to each row
 records_df = df.apply(prepare_record, axis=1).dropna()
 
 # Create tables and insert data into the vector store
-vec.create_tables()
-vec.create_index()  # DiskAnnIndex
-vec.create_keyword_search_index()  # GIN Index
+#vec.create_tables()
+#vec.create_index()  # DiskAnnIndex
+#vec.create_keyword_search_index()  # GIN Index
 vec.upsert(records_df)
