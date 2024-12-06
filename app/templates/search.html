@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>KBN Search Interface</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>KBN Search</h1>
+        <div class="search-container">
+            <input type="text" id="query" placeholder="Enter your search query">
+            <button onclick="search()">Search</button>
+        </div>
+        <div id="loading" class="loading hidden">Searching...</div>
+        <div id="result" class="result-container"></div>
+    </div>
+
+    <script>
+    function search() {
+        const queryInput = document.getElementById('query');
+        const loading = document.getElementById('loading');
+        const result = document.getElementById('result');
+        
+        // Show loading, hide previous results
+        loading.classList.remove('hidden');
+        result.innerHTML = '';
+        
+        fetch('/search', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({query: queryInput.value})
+        })
+        .then(response => response.json())
+        .then(data => {
+            loading.classList.add('hidden');
+            if (data.success) {
+                result.innerHTML = `<div class="result-text">${data.result}</div>`;
+            } else {
+                result.innerHTML = `<div class="error">Error: ${data.error}</div>`;
+            }
+        })
+        .catch(error => {
+            loading.classList.add('hidden');
+            result.innerHTML = `<div class="error">Error: ${error}</div>`;
+        });
+    }
+
+    // Allow Enter key to trigger search
+    document.getElementById('query').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            search();
+        }
+    });
+    </script>
+</body>
+</html>
