@@ -31,14 +31,14 @@ A Retrieval-Augmented Generation (RAG) system that provides AI-powered responses
 - Python 3.7 or higher
 - OpenAI API key
 - Cohere API key
-- PostgreSQL client (recommended: TablePlus)
+- PostgreSQL client (im using pgadmin4)
 
 ## Quick Start
 
 1. **Clone and Configure**
    ```bash
-   git clone <repository-url>
-   cp example.env .env
+   git clone https://github.com/MattiasHaughom/rag_model.git
+   cp .env
    ```
    Edit `.env` file with your API keys and configuration
 
@@ -46,6 +46,7 @@ A Retrieval-Augmented Generation (RAG) system that provides AI-powered responses
    ```bash
    docker compose up -d
    ```
+   You need to be in the docker directory to run this command.
 
 3. **Install Dependencies**
    ```bash
@@ -58,11 +59,16 @@ A Retrieval-Augmented Generation (RAG) system that provides AI-powered responses
 
 4. **Run Application**
    ```bash
-   python run.py
+   pdm run python run.py
    ```
 
-## Database Configuration
 
+5. **Access Interface**
+   Open your browser and navigate to `http://localhost:5000` to interact with the application.
+   Only in development mode.
+
+
+## Database Configuration
 PostgreSQL connection details:
 ```plaintext
 Host: localhost
@@ -94,23 +100,14 @@ The system utilizes a modern architecture combining:
 - Employs caching strategies for frequently accessed content
 
 
-
-
-
-
-```
-
-This improved README:
-1. Uses more technical and precise terminology
-2. Provides a clearer structure
-3. Adds important sections like Architecture and Performance Considerations
-4. Improves formatting with proper Markdown usage
-5. Includes more detailed feature descriptions
-6. Adds placeholder sections for Contributing and License
-
-You should customize:
-- The actual repository URL
-- The specific web framework you're using
-- The license information
-- Any specific configuration details unique to your implementation
-- Additional deployment or setup steps if necessary
+# Future work
+- Search capabilities
+  - Improve the keyword search to select the most relevant keywords
+- Cloud storage integration
+  - Google docs integration
+  - Perhaps azure postgres integration eventually?
+- Web interface for query interaction
+  - Need to improve the interface esthetics
+- Improved user interface and experience
+  - Structure of the output needs to be improved
+- Improved error handling and user feedback
