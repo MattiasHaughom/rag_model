@@ -6,7 +6,7 @@ from anthropic import Anthropic
 from openai import OpenAI
 from pydantic import BaseModel
 
-from config.settings import get_settings
+from ..config.settings import get_settings
 
 
 class LLMFactory:

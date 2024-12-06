@@ -4,7 +4,7 @@ import pandas as pd
 import psycopg
 from langchain_community.document_loaders import PyPDFLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-from database.vector_store import VectorStore
+from .database.vector_store import VectorStore
 from timescale_vector.client import uuid_from_time
 from pathlib import Path
 from typing import List, Dict, Any

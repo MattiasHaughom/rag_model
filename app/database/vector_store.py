@@ -6,7 +6,7 @@ from typing import Any, List, Optional, Tuple, Union
 import cohere
 import pandas as pd
 import psycopg
-from config.settings import get_settings
+from ..config.settings import get_settings
 from openai import OpenAI
 from timescale_vector import client
 

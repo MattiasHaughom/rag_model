@@ -1,7 +1,7 @@
 from typing import List
 import pandas as pd
 from pydantic import BaseModel, Field
-from services.llm_factory import LLMFactory
+from .llm_factory import LLMFactory
 
 
 class SynthesizedResponse(BaseModel):
