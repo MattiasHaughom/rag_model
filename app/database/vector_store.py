@@ -7,9 +7,28 @@ import cohere
 import pandas as pd
 import psycopg
 from ..config.settings import get_settings
+from ..services.llm_factory import LLMFactory
+from pydantic import BaseModel
 from openai import OpenAI
+from ..services.synthesizer import Keywords
 from timescale_vector import client
+import nltk
+from nltk.corpus import wordnet
+from typing import List
 
+# Ensure the necessary NLTK data is downloaded
+nltk.download('punkt_tab')
+nltk.download('wordnet')
+
+
+def expand_with_synonyms(keywords: List[str]) -> List[str]:
+    """Expand keywords with synonyms using WordNet."""
+    expanded_keywords = set(keywords)
+    for keyword in keywords:
+        for syn in wordnet.synsets(keyword):
+            for lemma in syn.lemmas():
+                expanded_keywords.add(lemma.name())
+    return list(expanded_keywords)
 
 class VectorStore:
     """A class for managing vector operations and database interactions."""
@@ -253,6 +272,40 @@ class VectorStore:
         """
         logging.info(f"{search_type} search completed in {elapsed_time:.3f} seconds")
 
+    def extract_keywords_with_llm(self, query: str) -> List[str]:
+        """Extract keywords from the query using an LLM."""
+        # Set the OpenAI API key
+        client = OpenAI()
+        OpenAI.api_key = self.settings.openai.api_key
+
+        # Define the prompt for keyword extraction
+        message = [
+            {
+            "role": "system",
+             "content": "You are a financial analyst. Your task is to extract the two most important keywords from the given query, and return them as a list of strings."},
+            {
+            "role": "user",
+            "content": f"""Extract the most important keywords from the following query: '{query}'
+            Only return only two keywords, no other text.
+            """
+            }
+        ]
+
+        # Call the OpenAI API to get the keywords
+        response = client.beta.chat.completions.parse(
+            model="gpt-4o-mini",
+            messages=message,
+            response_format=Keywords
+        )
+        
+        keywords = response.choices[0].message.parsed.content
+        # Extract keywords from the response
+        if isinstance(keywords, list) and all(isinstance(i, list) for i in keywords):
+            keywords = [item for sublist in keywords for item in sublist]
+
+        #keywords = response.choices[0].message.parsed.content
+        return keywords
+
     def keyword_search(
         self, query: str, limit: int = 5, return_dataframe: bool = True
     ) -> Union[List[Tuple[str, str, float]], pd.DataFrame]:
@@ -270,9 +323,21 @@ class VectorStore:
         Example:
             results = vector_store.keyword_search("shipping options")
         """
+        # Extract keywords using LLM
+        keywords = self.extract_keywords_with_llm(query)
+        logging.info(f"Extracted keywords: {keywords}")
+
+        # Expand keywords with synonyms
+        expanded_keywords = expand_with_synonyms(keywords)
+        logging.info(f"Expanded keywords: {expanded_keywords}")
+
+        # Construct a search query with expanded keywords
+        search_query = ' | '.join(expanded_keywords)
+        logging.info(f"Search query: {search_query}")
+
         search_sql = f"""
         SELECT id, contents, ts_rank_cd(to_tsvector('english', contents), query) as rank
-        FROM {self.vector_settings.table_name}, websearch_to_tsquery('english', %s) query
+        FROM {self.vector_settings.table_name}, to_tsquery('english', %s) query
         WHERE to_tsvector('english', contents) @@ query
         ORDER BY rank DESC
         LIMIT %s
@@ -280,10 +345,9 @@ class VectorStore:
 
         start_time = time.time()
 
-        # Create a new connection using psycopg3
         with psycopg.connect(self.settings.database.service_url) as conn:
             with conn.cursor() as cur:
-                cur.execute(search_sql, (query, limit))
+                cur.execute(search_sql, (search_query, limit))
                 results = cur.fetchall()
 
         elapsed_time = time.time() - start_time

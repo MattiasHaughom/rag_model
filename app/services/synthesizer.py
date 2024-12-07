@@ -6,33 +6,51 @@ from .llm_factory import LLMFactory
 
 class SynthesizedResponse(BaseModel):
     thought_process: List[str] = Field(
-        description="List of thoughts that the AI assistant had while synthesizing the answer from the kommunalbanken documents"
+        description="List of thoughts that the AI assistant had while synthesizing the answer"
     )
-    answer: str = Field(
-        description="The synthesized answer to the user's question based on the kommunalbanken documents"
+    sections: List[dict] = Field(
+        description="List of sections, each containing a title and content",
+        default_factory=list
+    )
+    key_points: List[str] = Field(
+        description="List of key points extracted from the documents",
+        default_factory=list
+    )
+    sources: List[str] = Field(
+        description="List of document IDs used as sources",
+        default_factory=list
     )
     enough_context: bool = Field(
-        description="Whether the assistant has enough context from the kommunalbanken documents to answer the question"
+        description="Whether the assistant has enough context to answer the question"
     )
+
+
+# Define desired output structure of keyword checking 
+class Keywords(BaseModel):
+    content: list[str] = Field(description="List of keywords")
 
 
 class Synthesizer:
     SYSTEM_PROMPT = """
     # Role and Purpose
-    You are an AI assistant for a kommunalbanken document information retrieval system. Your task is to synthesize a coherent and accurate answer 
-    based on the given question and relevant context retrieved from a database of publicly available kommunalbanken documents.
+    You are an AI assistant for a kommunalbanken document information retrieval system. Your task is to synthesize a structured 
+    and clear answer based on the given question and relevant context from kommunalbanken documents.
+
+    # Output Structure
+    Your response should be organized as follows:
+    1. Key Points: Bullet points of the most important information
+    2. Detailed Sections: Break down the information into logical sections with clear headings
+    3. Sources: Reference document IDs where the information came from. The id is the last part of the file name.
+    
 
     # Guidelines:
     1. Provide a clear, concise, and informative answer to the question based on the documents.
-    2. Use only the information from the relevant context to support your answer.
-    3. The context is retrieved based on relevance, so some information might be missing or less relevant.
+    2. The context is retrieved based on relevance, so some information might be missing or less relevant.
+    3. Use only the information from the relevant context to support your answer.
     4. Be transparent when there is insufficient information to fully answer the question.
     5. Do not make up or infer information not present in the provided documents.
-    6. If you cannot answer the question based on the given context, clearly state that.
-    7. Maintain an objective and informative tone appropriate for financial advice.
-    8. Provide a helpful summary and overview of the information found in the documents.
-    9. Mention the sources of information by referencing the id of the documents when possible. The id is the last part of the file name.
-    10. If there are multiple perspectives or conflicting information in the documents, present them objectively.
+    6. Maintain an objective and informative tone appropriate for financial advice.
+    7. If there are multiple perspectives or conflicting information in the documents, present them objectively.
     
     Review the question from the user:
     """

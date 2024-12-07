@@ -16,12 +16,46 @@
     </div>
 
     <script>
+    function formatResponse(data) {
+        let html = '';
+        
+        // Key Points section
+        if (data.key_points && data.key_points.length > 0) {
+            html += '<div class="section"><h3>Key Points</h3><ul>';
+            data.key_points.forEach(point => {
+                html += `<li>${point}</li>`;
+            });
+            html += '</ul></div>';
+        }
+        
+        // Detailed Sections
+        if (data.sections && data.sections.length > 0) {
+            html += '<div class="section">';
+            data.sections.forEach(section => {
+                html += `<h3>${section.title}</h3>`;
+                html += `<div>${section.content}</div>`;
+            });
+            html += '</div>';
+        }
+        
+        // Sources
+        if (data.sources && data.sources.length > 0) {
+            html += '<div class="section sources">';
+            html += '<h3>Sources</h3><ul>';
+            data.sources.forEach(source => {
+                html += `<li>Document ID: ${source}</li>`;
+            });
+            html += '</ul></div>';
+        }
+        
+        return html;
+    }
+
     function search() {
         const queryInput = document.getElementById('query');
         const loading = document.getElementById('loading');
         const result = document.getElementById('result');
         
-        // Show loading, hide previous results
         loading.classList.remove('hidden');
         result.innerHTML = '';
         
@@ -36,7 +70,7 @@
         .then(data => {
             loading.classList.add('hidden');
             if (data.success) {
-                result.innerHTML = `<div class="result-text">${data.result}</div>`;
+                result.innerHTML = formatResponse(data.result);
             } else {
                 result.innerHTML = `<div class="error">Error: ${data.error}</div>`;
             }

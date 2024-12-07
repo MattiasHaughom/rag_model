@@ -5,7 +5,6 @@ import instructor
 from anthropic import Anthropic
 from openai import OpenAI
 from pydantic import BaseModel
-
 from ..config.settings import get_settings
 
 

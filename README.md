@@ -103,6 +103,7 @@ The system utilizes a modern architecture combining:
 # Future work
 - Search capabilities
   - Improve the keyword search to select the most relevant keywords
+  - Include search history
 - Cloud storage integration
   - Google docs integration
   - Perhaps azure postgres integration eventually?

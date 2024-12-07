@@ -65,3 +65,35 @@ button:hover {
     background-color: #f8d7da;
     border-radius: 4px;
 }
+
+.section {
+    margin: 20px 0;
+    padding: 15px;
+    background: #f9f9f9;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.section h3 {
+    color: #333;
+    margin-bottom: 10px;
+    font-size: 1.2em;
+}
+
+.sources {
+    font-size: 0.9em;
+    color: #666;
+    border-top: 1px solid #eee;
+    margin-top: 20px;
+    padding-top: 15px;
+}
+
+.result-container ul {
+    margin: 0;
+    padding-left: 20px;
+}
+
+.result-container li {
+    margin-bottom: 8px;
+    line-height: 1.4;
+}

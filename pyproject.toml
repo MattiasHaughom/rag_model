@@ -120,6 +120,10 @@ dependencies = [
     "zipp==3.21.0",
     "anthropic>=0.40.0",
     "flask>=3.1.0",
+    "spacy>=3.7.5",
+    "nltk>=3.9.1",
+    "cython>=3.0.11",
+    "pydantic-ai>=0.0.11",
 ]
 requires-python = "==3.13.*"
 readme = "README.md"
